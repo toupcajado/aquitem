@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LocalHub - Conectando Você ao Comércio Local</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        },
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom smooth scrollbar & transitions */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="font-sans text-slate-800 h-full flex flex-col bg-slate-50 antialiased selection:bg-brand-500 selection:text-white pb-20 md:pb-0">
+
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-slate-200/80 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('explore')">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 via-brand-500 to-mint-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-brand-700 via-brand-600 to-mint-600 bg-clip-text text-transparent">LocalHub</span>
+                            <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-mint-100 text-mint-700">Bairro</span>
+                        </div>
+                        <p class="text-xs text-slate-500 hidden sm:block font-medium">O seu comércio local a um toque</p>
+                    </div>
+                </div>
+
+                <!-- Global Quick Search (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-md relative">
+                    <div class="relative w-full">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="desktopSearchInput" oninput="handleSearch(this.value)" placeholder="Busque por lojas, pão francês, corte de cabelo, oficina..." class="w-full pl-10 pr-10 py-2 bg-slate-100/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        <button onclick="clearSearch()" id="desktopClearBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Location Pill & Actions -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleLocationModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">
+                        <i data-lucide="navigation" class="w-3.5 h-3.5 text-brand-500 fill-brand-500"></i>
+                        <span id="currentLocationLabel" class="max-w-[110px] sm:max-w-none truncate">Centro • 500m</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+
+                    <button onclick="openNewBusinessModal()" class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-brand-600 to-mint-600 hover:from-brand-700 hover:to-mint-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition-all transform active:scale-95">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Anunciar Empresa</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="p-3 pt-0 border-t border-slate-100 md:hidden">
+            <div class="relative w-full">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="mobileSearchInput" oninput="handleSearch(this.value)" placeholder="Pesquisar comércio ou produto..." class="w-full pl-10 pr-10 py-2.5 bg-slate-100 border border-slate-200/80 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                <button onclick="clearSearch()" id="mobileClearBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- ================= VIEW 1: EXPLORE / HOME FEED ================= -->
+        <section id="view-explore" class="space-y-6">
+            
+            <!-- Hero Promotion Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-700 via-brand-600 to-mint-600 text-white p-6 sm:p-8 shadow-lg shadow-brand-500/10">
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold tracking-wide text-mint-100">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-mint-300"></i> Compre no Bairro
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
+                        Descubra produtos e serviços a poucos passos de você
+                    </h1>
+                    <p class="text-slate-100/90 text-xs sm:text-sm leading-relaxed">
+                        Encontre o pão quentinho, a oficina de confiança ou a farmácia aberta no seu bairro. Contato direto sem intermediários!
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <button onclick="switchView('products')" class="px-4 py-2 rounded-xl bg-white text-brand-700 hover:bg-slate-50 font-bold text-xs sm:text-sm shadow-md transition-all">
+                            Ver Produtos em Destaque
+                        </button>
+                        <button onclick="openNewBusinessModal()" class="px-4 py-2 rounded-xl bg-brand-800/40 hover:bg-brand-800/60 border border-white/20 font-semibold text-xs sm:text-sm backdrop-blur-sm transition-all">
+                            Cadastrar Meu Negócio
+                        </button>
+                    </div>
+                </div>
+                <!-- Graphic decoration elements -->
+                <div class="absolute -right-8 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute right-12 top-4 w-32 h-32 bg-mint-400/20 rounded-full blur-xl pointer-events-none"></div>
+            </div>
+
+            <!-- Categories Horizontal Slider -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="grid" class="w-5 h-5 text-brand-500"></i>
+                        Categorias
+                    </h2>
+                    <button onclick="filterByCategory('all')" class="text-xs font-semibold text-brand-600 hover:underline">Limpar Filtros</button>
+                </div>
+
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0" id="categoriesContainer">
+                    <!-- Dynamic Categories JS populated -->
+                </div>
+            </div>
+
+            <!-- Main Feed Controls & Filter Bar -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-slate-200/80">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900" id="feedTitle">Comércios Próximos</h2>
+                    <p class="text-xs text-slate-500" id="feedSubtitle">Mostrando estabelecimentos ordenados por proximidade</p>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <!-- Toggle Open Only -->
+                    <button id="toggleOpenOnlyBtn" onclick="toggleOpenFilter()" class="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all">
+                        <span class="w-2 h-2 rounded-full bg-slate-300" id="openFilterDot"></span>
+                        <span>Abertos Agora</span>
+                    </button>
+
+                    <!-- Sorting Select -->
+                    <select id="sortBySelect" onchange="applyFiltersAndSort()" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="distance">Mais Próximos</option>
+                        <option value="rating">Melhor Avaliados</option>
+                        <option value="name">Nome (A-Z)</option>
+                    </select>
+
+                    <!-- View Toggle (Grid / Map Preview) -->
+                    <button onclick="toggleMapView()" id="mapToggleBtn" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all" title="Alternar para Mapa">
+                        <i data-lucide="map" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Map View Drawer (Hidden by Default) -->
+            <div id="mapDrawer" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 h-64 sm:h-80 relative shadow-inner">
+                <div class="absolute inset-0 bg-slate-200/70 flex items-center justify-center bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]">
+                    <!-- Interactive Simulated Map canvas/pins -->
+                    <div class="relative w-full h-full p-6" id="mapPinsContainer">
+                        <!-- Pins rendered via JS -->
+                    </div>
+                </div>
+                <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-xs text-xs font-bold text-slate-700 flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-600"></i>
+                    <span>Mapa Interativo da Região</span>
+                </div>
+            </div>
+
+            <!-- Merchant Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="merchantGrid">
+                <!-- Dynamic Merchant Cards -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-12 px-4 bg-white rounded-3xl border border-slate-200">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                    <i data-lucide="store-off" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Nenhum comércio encontrado</h3>
+                <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Tente ajustar seus termos de busca, selecione outra categoria ou remova os filtros ativos.</p>
+                <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs rounded-xl transition-all">
+                    Resetar Filtros
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 2: PRODUCTS CATALOG ================= -->
+        <section id="view-products" class="hidden space-y-6">
+            <div>
+                <h1 class="text-2xl font-extrabold text-slate-900">Catálogo de Produtos e Serviços Local</h1>
+                <p class="text-xs sm:text-sm text-slate-500">Busque itens específicos disponíveis no estoque dos comércios do seu bairro</p>
+            </div>
+
+            <!-- Filter Products input -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="productCatalogSearch" oninput="filterProductsCatalog(this.value)" placeholder="Buscar por pão, bateria, óleo, marmita, corte..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <select id="productCategoryFilter" onchange="filterProductsCatalog()" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="all">Todas as Categorias</option>
+                </select>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="productGrid">
+                <!-- Dynamic Products -->
+            </div>
+        </section>
+
+        <!-- ================= VIEW 3: FAVORITES ================= -->
+        <section id="view-favorites" class="hidden space-y-6">
+            <div>
+                <h1 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="heart" class="w-6 h-6 text-rose-500 fill-rose-500"></i>
+                    Seus Comércios Favoritos
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500">Acesso rápido aos estabelecimentos que você mais utiliza</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="favoritesGrid">
+                <!-- Favorites Cards -->
+            </div>
+
+            <div id="favoritesEmptyState" class="hidden text-center py-16 bg-white rounded-3xl border border-slate-200">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-50 flex items-center justify-center text-rose-400">
+                    <i data-lucide="heart-off" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Nenhum favorito salvo</h3>
+                <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Clique no ícone de coração nos cartões dos estabelecimentos para salvá-los aqui.</p>
+                <button onclick="switchView('explore')" class="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all">
+                    Explorar Comércios
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 4: MERCHANT PROFILE DETAIL ================= -->
+        <section id="view-merchant-detail" class="hidden space-y-6">
+            <!-- Back Button -->
+            <button onclick="switchView('explore')" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition-all">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar para a lista
+            </button>
+
+            <div id="merchantDetailContent" class="space-y-6">
+                <!-- Populated via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 md:hidden">
+        <div class="grid grid-cols-4 h-16">
+            <button onclick="switchView('explore')" id="nav-btn-explore" class="flex flex-col items-center justify-center gap-1 text-brand-600 font-bold transition-all">
+                <i data-lucide="compass" class="w-5 h-5"></i>
+                <span class="text-[10px]">Explorar</span>
+            </button>
+            
+            <button onclick="switchView('products')" id="nav-btn-products" class="flex flex-col items-center justify-center gap-1 text-slate-500 font-semibold transition-all">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <span class="text-[10px]">Produtos</span>
+            </button>
+            
+            <button onclick="switchView('favorites')" id="nav-btn-favorites" class="flex flex-col items-center justify-center gap-1 text-slate-500 font-semibold transition-all relative">
+                <i data-lucide="heart" class="w-5 h-5"></i>
+                <span class="text-[10px]">Favoritos</span>
+                <span id="favBadgeMobile" class="hidden absolute top-2 right-6 w-2 h-2 rounded-full bg-rose-500"></span>
+            </button>
+            
+            <button onclick="openNewBusinessModal()" class="flex flex-col items-center justify-center gap-1 text-mint-600 font-bold transition-all">
+                <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-brand-500 to-mint-500 flex items-center justify-center text-white shadow-xs">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                </div>
+                <span class="text-[10px]">Anunciar</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- REGISTER NEW MERCHANT MODAL -->
+    <div id="modalNewBusiness" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-200">
+            
+            <button onclick="closeNewBusinessModal()" class="absolute top-5 right-5 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div>
+                <div class="flex items-center gap-2 text-brand-600 text-xs font-bold uppercase tracking-wider mb-1">
+                    <i data-lucide="store" class="w-4 h-4"></i> Cadastro do Lojista
+                </div>
+                <h2 class="text-xl font-extrabold text-slate-900">Cadastrar Novo Comércio</h2>
+                <p class="text-xs text-slate-500">Insira as informações do seu negócio para ser localizado pelos moradores do bairro</p>
+            </div>
+
+            <form id="businessForm" onsubmit="saveNewBusiness(event)" class="space-y-4">
+                
+                <!-- Nome & Categoria -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Estabelecimento *</label>
+                        <input type="text" required id="formName" placeholder="Ex: Padaria do Sol" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Categoria *</label>
+                        <select id="formCategory" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white">
+                            <option value="Padarias">Padarias</option>
+                            <option value="Mercados">Mercados</option>
+                            <option value="Restaurantes">Restaurantes</option>
+                            <option value="Serviços">Serviços</option>
+                            <option value="Oficinas">Oficinas</option>
+                            <option value="Pet Shop">Pet Shop</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- WhatsApp & Telefone -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">WhatsApp de Atendimento *</label>
+                        <input type="tel" required id="formWhatsapp" placeholder="11999998888" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <span class="text-[10px] text-slate-400">Com DDD (apenas números)</span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Horário de Funcionamento *</label>
+                        <input type="text" required id="formHours" placeholder="Ex: Seg a Sáb • 07:00 às 19:00" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Endereço & Bairro -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Endereço Completo *</label>
+                        <input type="text" required id="formAddress" placeholder="Rua das Flores, 123 - Centro" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Distância Estimada</label>
+                        <select id="formDistance" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white">
+                            <option value="250m">250m</option>
+                            <option value="500m" selected>500m</option>
+                            <option value="800m">800m</option>
+                            <option value="1.2km">1.2km</option>
+                            <option value="2.5km">2.5km</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Imagem / Capa -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">URL da Imagem de Capa (Opcional)</label>
+                    <input type="url" id="formImageUrl" placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <p class="text-[10px] text-slate-400 mt-1">Se deixar em branco, uma imagem bonita padrão de acordo com a categoria será selecionada.</p>
+                </div>
+
+                <!-- Descrição -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Descrição Breve do Comércio</label>
+                    <textarea id="formDescription" rows="2" placeholder="Descreva os diferenciais, especialidades ou tradição da sua loja..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Status Inicial -->
+                <div class="flex items-center gap-2 pt-2">
+                    <input type="checkbox" id="formIsOpen" checked class="w-4 h-4 text-brand-600 rounded-md focus:ring-brand-500">
+                    <label for="formIsOpen" class="text-xs font-bold text-slate-700 cursor-pointer">Marcar como "Aberto Agora"</label>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closeNewBusinessModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-mint-600 text-white font-bold text-xs shadow-md hover:from-brand-700 hover:to-mint-700 transition-all">
+                        Salvar e Anunciar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD PRODUCT MODAL -->
+    <div id="modalAddProduct" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 relative">
+            <button onclick="closeAddProductModal()" class="absolute top-5 right-5 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div>
+                <div class="flex items-center gap-2 text-mint-600 text-xs font-bold uppercase tracking-wider mb-1">
+                    <i data-lucide="tag" class="w-4 h-4"></i> Catálogo
+                </div>
+                <h2 class="text-lg font-extrabold text-slate-900">Adicionar Produto ou Serviço</h2>
+                <p class="text-xs text-slate-500">O item ficará disponível para buscas na sua loja</p>
+            </div>
+
+            <form id="productForm" onsubmit="saveNewProduct(event)" class="space-y-4">
+                <input type="hidden" id="productMerchantId">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Título do Produto/Serviço *</label>
+                    <input type="text" required id="prodTitle" placeholder="Ex: Pão Francês Quentinho (kg) ou Troca de Óleo" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Preço (R$) *</label>
+                        <input type="number" step="0.01" required id="prodPrice" placeholder="12.50" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Disponibilidade</label>
+                        <select id="prodAvailable" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white">
+                            <option value="true">Em Estoque / Disponível</option>
+                            <option value="false">Indisponível</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Descrição Breve</label>
+                    <input type="text" id="prodDescription" placeholder="Ex: Crocante, feito a cada 30 min" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">URL da Foto do Produto (Opcional)</label>
+                    <input type="url" id="prodImageUrl" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div class="pt-3 flex justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closeAddProductModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-mint-600 text-white font-bold text-xs shadow-md hover:bg-mint-700 transition-all">
+                        Cadastrar Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOCATION SELECTION MODAL -->
+    <div id="modalLocation" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 relative">
+            <button onclick="toggleLocationModal()" class="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-5 h-5 text-brand-500"></i> Alterar Sua Localização
+            </h3>
+            <p class="text-xs text-slate-500">Selecione seu bairro ou raio de alcance para ver ofertas próximas:</p>
+            
+            <div class="space-y-2">
+                <button onclick="setLocation('Centro • 500m')" class="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50/50 flex items-center justify-between text-xs font-bold text-slate-700 transition-all">
+                    <span>Centro (Raio de 500m)</span>
+                    <i data-lucide="check" class="w-4 h-4 text-brand-600"></i>
+                </button>
+                <button onclick="setLocation('Bairro Jardim • 1km')" class="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50/50 flex items-center justify-between text-xs font-bold text-slate-700 transition-all">
+                    <span>Bairro Jardim (Raio de 1km)</span>
+                </button>
+                <button onclick="setLocation('Vila Nova • 2km')" class="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50/50 flex items-center justify-between text-xs font-bold text-slate-700 transition-all">
+                    <span>Vila Nova (Raio de 2km)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        /* ================= INITIAL DATA SEED ================= */
+        const DEFAULT_MERCHANTS = [
+            {
+                id: 'merch-1',
+                name: 'Padaria do Sol',
+                category: 'Padarias',
+                rating: 4.9,
+                reviewsCount: 128,
+                whatsapp: '5511999887766',
+                address: 'Rua das Flores, 142 - Centro',
+                distance: '350m',
+                hours: 'Seg a Dom • 06:00 às 20:00',
+                isOpen: true,
+                description: 'Tradição em pães artesanais, sonhos Recheados, bolos fofinhos e café fresco passado na hora.',
+                imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
+                products: [
+                    { id: 'p1', title: 'Pão Francês Quentinho (kg)', price: 14.90, isAvailable: true, description: 'Saída de fornadas a cada 30 minutos', imageUrl: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=400&q=80' },
+                    { id: 'p2', title: 'Bolo Caseiro de Cenoura c/ Chocolate', price: 22.00, isAvailable: true, description: 'Fatia generosa ou bolo inteiro', imageUrl: 'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?auto=format&fit=crop&w=400&q=80' },
+                    { id: 'p3', title: 'Café Expresso Especial', price: 6.50, isAvailable: true, description: 'Grãos selecionados 100% arábica', imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=80' }
+                ]
+            },
+            {
+                id: 'merch-2',
+                name: 'Oficina Mecânica Silva',
+                category: 'Oficinas',
+                rating: 4.8,
+                reviewsCount: 84,
+                whatsapp: '5511988776655',
+                address: 'Av. Principal, 890 - Centro',
+                distance: '1.2km',
+                hours: 'Seg a Sex • 08:00 às 18:00',
+                isOpen: true,
+                description: 'Especialistas em troca de óleo rápida, freios, alinhamento 3D, suspensão e diagnóstico computadorizado.',
+                imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80',
+                products: [
+                    { id: 'p4', title: 'Troca de Óleo + Filtro Sintético', price: 180.00, isAvailable: true, description: 'Inclui revisão gratuita de 15 itens', imageUrl: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=400&q=80' },
+                    { id: 'p5', title: 'Alinhamento 3D & Balanceamento', price: 120.00, isAvailable: true, description: 'Para as 4 rodas', imageUrl: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=400&q=80' }
+                ]
+            },
+            {
+                id: 'merch-3',
+                name: 'Mercado Bairro Bom',
+                category: 'Mercados',
+                rating: 4.7,
+                reviewsCount: 210,
+                whatsapp: '5511977665544',
+                address: 'Praça da Matriz, 45 - Centro',
+                distance: '600m',
+                hours: 'Seg a Sáb • 07:30 às 21:00',
+                isOpen: true,
+                description: 'Hortifrúti fresco diariamente, açougue com cortes nobres e produtos de mercearia de marcas líderes.',
+                imageUrl: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80',
+                products: [
+                    { id: 'p6', title: 'Banana Prata Orgânica (kg)', price: 6.99, isAvailable: true, description: 'Direto do produtor local', imageUrl: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=400&q=80' },
+                    { id: 'p7', title: 'Queijo Minas Frescal Caseiro', price: 28.90, isAvailable: true, description: 'Peça aprox. 500g', imageUrl: 'https://images.unsplash.com/photo-1552767059-ce182ead8c1b?auto=format&fit=crop&w=400&q=80' }
+                ]
+            },
+            {
+                id: 'merch-4',
+                name: 'Restaurante Sabor & Arte',
+                category: 'Restaurantes',
+                rating: 4.9,
+                reviewsCount: 340,
+                whatsapp: '5511966554433',
+                address: 'Rua do Comércio, 310 - Centro',
+                distance: '800m',
+                hours: 'Seg a Dom • 11:30 às 15:00',
+                isOpen: true,
+                description: 'Comida caseira no fogão a lenha, marmitex executiva e opcional buffet por quilo com ingredientes selecionados.',
+                imageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+                products: [
+                    { id: 'p8', title: 'Marmitex Executiva Bife a Cavalo', price: 25.00, isAvailable: true, description: 'Acompanha arroz, feijão, farofa e salada', imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80' },
+                    { id: 'p9', title: 'Suco Natural de Laranja (500ml)', price: 8.00, isAvailable: true, description: '100% fruta sem adição de água', imageUrl: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=400&q=80' }
+                ]
+            },
+            {
+                id: 'merch-5',
+                name: 'Barbearia & Salão Estilo',
+                category: 'Serviços',
+                rating: 5.0,
+                reviewsCount: 95,
+                whatsapp: '5511955443322',
+                address: 'Rua XV de Novembro, 88 - Centro',
+                distance: '950m',
+                hours: 'Ter a Sáb • 09:00 às 19:30',
+                isOpen: true,
+                description: 'Corte masculino e feminino, barba com toalha quente, sobrancelha e tratamentos capilares completos.',
+                imageUrl: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
+                products: [
+                    { id: 'p10', title: 'Corte Masculino + Barba Completa', price: 65.00, isAvailable: true, description: 'Com hidratação e toalha quente', imageUrl: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=400&q=80' }
+                ]
+            },
+            {
+                id: 'merch-6',
+                name: 'Pet Shop AuAu Clube',
+                category: 'Pet Shop',
+                rating: 4.6,
+                reviewsCount: 62,
+                whatsapp: '5511944332211',
+                address: 'Av. dos Ipês, 400 - Centro',
+                distance: '1.5km',
+                hours: 'Seg a Sáb • 08:30 às 18:00',
+                isOpen: false,
+                description: 'Banho e tosa carinhoso, rações premium, medicamentos veterinários e acessórios divertidos para seu pet.',
+                imageUrl: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=800&q=80',
+                products: [
+                    { id: 'p11', title: 'Banho & Tosa Higiênica c/ Enfeite', price: 75.00, isAvailable: true, description: 'Para cães de pequeno e médio porte', imageUrl: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80' }
+                ]
+            }
+        ];
+
+        const CATEGORIES = [
+            { id: 'all', label: 'Todos', icon: 'grid', color: 'bg-brand-50 text-brand-600 border-brand-200' },
+            { id: 'Padarias', label: 'Padarias', icon: 'croissant', color: 'bg-amber-50 text-amber-600 border-amber-200' },
+            { id: 'Mercados', label: 'Mercados', icon: 'shopping-cart', color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+            { id: 'Restaurantes', label: 'Restaurantes', icon: 'utensils', color: 'bg-rose-50 text-rose-600 border-rose-200' },
+            { id: 'Serviços', label: 'Serviços', icon: 'wrench', color: 'bg-blue-50 text-blue-600 border-blue-200' },
+            { id: 'Oficinas', label: 'Oficinas', icon: 'car', color: 'bg-slate-100 text-slate-700 border-slate-300' },
+            { id: 'Pet Shop', label: 'Pet Shop', icon: 'dog', color: 'bg-purple-50 text-purple-600 border-purple-200' }
+        ];
+
+        /* ================= STATE MANAGEMENT ================= */
+        let merchants = [];
+        let favorites = [];
+        let activeCategory = 'all';
+        let searchQuery = '';
+        let openOnlyFilter = false;
+        let activeView = 'explore';
+        let isMapView = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initStorage();
+            renderCategories();
+            applyFiltersAndSort();
+            updateFavoritesBadge();
+            lucide.createIcons();
+        });
+
+        function initStorage() {
+            const storedMerchants = localStorage.getItem('localhub_merchants');
+            if (!storedMerchants) {
+                merchants = [...DEFAULT_MERCHANTS];
+                saveMerchantsToStorage();
+            } else {
+                try {
+                    merchants = JSON.parse(storedMerchants);
+                } catch (e) {
+                    merchants = [...DEFAULT_MERCHANTS];
+                }
+            }
+
+            const storedFavs = localStorage.getItem('localhub_favorites');
+            if (storedFavs) {
+                try {
+                    favorites = JSON.parse(storedFavs);
+                } catch(e) {
+                    favorites = [];
+                }
+            }
+        }
+
+        function saveMerchantsToStorage() {
+            localStorage.setItem('localhub_merchants', JSON.stringify(merchants));
+        }
+
+        function saveFavoritesToStorage() {
+            localStorage.setItem('localhub_favorites', JSON.stringify(favorites));
+            updateFavoritesBadge();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            const selectProd = document.getElementById('productCategoryFilter');
+            
+            container.innerHTML = CATEGORIES.map(cat => `
+                <button onclick="filterByCategory('${cat.id}')" 
+                    class="flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs font-bold whitespace-nowrap transition-all transform active:scale-95 ${activeCategory === cat.id ? 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/20' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}">
+                    <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
+                    <span>${cat.label}</span>
+                </button>
+            `).join('');
+
+            // Also populate product filter select
+            selectProd.innerHTML = `<option value="all">Todas as Categorias</option>` + 
+                CATEGORIES.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+            
+            lucide.createIcons();
+        }
+
+        function filterByCategory(catId) {
+            activeCategory = catId;
+            renderCategories();
+            applyFiltersAndSort();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val.trim().toLowerCase();
+            
+            // Sync desktop & mobile inputs
+            document.getElementById('desktopSearchInput').value = val;
+            document.getElementById('mobileSearchInput').value = val;
+
+            const hasVal = searchQuery.length > 0;
+            document.getElementById('desktopClearBtn').classList.toggle('hidden', !hasVal);
+            document.getElementById('mobileClearBtn').classList.toggle('hidden', !hasVal);
+
+            applyFiltersAndSort();
+            if (activeView === 'products') {
+                filterProductsCatalog(val);
+            }
+        }
+
+        function clearSearch() {
+            handleSearch('');
+        }
+
+        function toggleOpenFilter() {
+            openOnlyFilter = !openOnlyFilter;
+            const btn = document.getElementById('toggleOpenOnlyBtn');
+            const dot = document.getElementById('openFilterDot');
+            
+            if (openOnlyFilter) {
+                btn.classList.add('bg-mint-50', 'border-mint-500', 'text-mint-700');
+                dot.classList.replace('bg-slate-300', 'bg-mint-500');
+            } else {
+                btn.classList.remove('bg-mint-50', 'border-mint-500', 'text-mint-700');
+                dot.classList.replace('bg-mint-500', 'bg-slate-300');
+            }
+            applyFiltersAndSort();
+        }
+
+        function applyFiltersAndSort() {
+            let filtered = [...merchants];
+
+            // Filter Category
+            if (activeCategory !== 'all') {
+                filtered = filtered.filter(m => m.category === activeCategory);
+            }
+
+            // Filter Search Query (Name, Category, Description, or Products title)
+            if (searchQuery) {
+                filtered = filtered.filter(m => {
+                    const matchName = m.name.toLowerCase().includes(searchQuery);
+                    const matchCategory = m.category.toLowerCase().includes(searchQuery);
+                    const matchDesc = m.description.toLowerCase().includes(searchQuery);
+                    const matchProd = m.products && m.products.some(p => p.title.toLowerCase().includes(searchQuery));
+                    return matchName || matchCategory || matchDesc || matchProd;
+                });
+            }
+
+            // Filter Open Only
+            if (openOnlyFilter) {
+                filtered = filtered.filter(m => m.isOpen);
+            }
+
+            // Sorting
+            const sortBy = document.getElementById('sortBySelect').value;
+            if (sortBy === 'distance') {
+                filtered.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+            } else if (sortBy === 'rating') {
+                filtered.sort((a, b) => b.rating - a.rating);
+            } else if (sortBy === 'name') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            renderMerchantGrid(filtered);
+            if (isMapView) {
+                renderMapPins(filtered);
+            }
+        }
+
+        function renderMerchantGrid(list) {
+            const grid = document.getElementById('merchantGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (list.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = list.map(m => {
+                const isFav = favorites.includes(m.id);
+                const categoryIcon = getCategoryIcon(m.category);
+                
+                return `
+                <div class="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col group">
+                    
+                    <!-- Card Image & Overlay -->
+                    <div class="relative h-44 overflow-hidden bg-slate-100 cursor-pointer" onclick="openMerchantDetail('${m.id}')">
+                        <img src="${m.imageUrl}" alt="${m.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=800&q=80'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+                        
+                        <!-- Open/Closed Status Badge -->
+                        <div class="absolute top-3 left-3">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold backdrop-blur-md shadow-xs ${m.isOpen ? 'bg-mint-500/90 text-white' : 'bg-slate-800/80 text-slate-300'}">
+                                <span class="w-1.5 h-1.5 rounded-full ${m.isOpen ? 'bg-white animate-pulse' : 'bg-slate-400'}"></span>
+                                ${m.isOpen ? 'Aberto' : 'Fechado'}
+                            </span>
+                        </div>
+
+                        <!-- Distance Pill -->
+                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-700 shadow-xs flex items-center gap-1">
+                            <i data-lucide="navigation" class="w-3 h-3 text-brand-500"></i>
+                            ${m.distance}
+                        </div>
+
+                        <!-- Category Pill Bottom Left -->
+                        <div class="absolute bottom-3 left-3 flex items-center gap-1 text-xs text-white font-medium bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full">
+                            <i data-lucide="${categoryIcon}" class="w-3.5 h-3.5 text-mint-400"></i>
+                            <span>${m.category}</span>
+                        </div>
+
+                        <!-- Favorite Toggle -->
+                        <button onclick="event.stopPropagation(); toggleFavorite('${m.id}')" class="absolute bottom-3 right-3 p-2 rounded-full bg-white/90 backdrop-blur-md text-slate-700 hover:text-rose-500 transition-colors shadow-xs">
+                            <i data-lucide="heart" class="w-4 h-4 ${isFav ? 'text-rose-500 fill-rose-500' : ''}"></i>
+                        </button>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-1">
+                                <h3 onclick="openMerchantDetail('${m.id}')" class="text-base font-extrabold text-slate-900 group-hover:text-brand-600 transition-colors cursor-pointer line-clamp-1">${m.name}</h3>
+                                <div class="flex items-center gap-1 text-amber-500 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200/60 shrink-0">
+                                    <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+                                    <span>${m.rating.toFixed(1)}</span>
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-2">${m.description}</p>
+                            
+                            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                                <span class="truncate">${m.address}</span>
+                            </div>
+                        </div>
+
+                        <!-- Products Preview Tag Pill -->
+                        ${m.products && m.products.length > 0 ? `
+                            <div class="pt-2 border-t border-slate-100 flex items-center gap-2 overflow-hidden">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Destaque:</span>
+                                <div class="text-xs font-medium text-brand-700 truncate bg-brand-50 px-2 py-1 rounded-md">
+                                    ${m.products[0].title} • R$ ${m.products[0].price.toFixed(2)}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Action Buttons Bar -->
+                        <div class="pt-3 border-t border-slate-100 grid grid-cols-3 gap-2">
+                            <a href="https://wa.me/${m.whatsapp}?text=${encodeURIComponent('Olá! Encontrei sua loja no LocalHub e gostaria de informações.')}" target="_blank" class="flex items-center justify-center gap-1.5 py-2 px-2 bg-mint-50 hover:bg-mint-100 text-mint-700 rounded-xl text-xs font-bold transition-all border border-mint-200">
+                                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                                <span>Whats</span>
+                            </a>
+                            
+                            <button onclick="openRouteMap('${m.address}')" class="flex items-center justify-center gap-1.5 py-2 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold transition-all border border-slate-200">
+                                <i data-lucide="navigation-2" class="w-3.5 h-3.5 text-brand-500"></i>
+                                <span>Rota</span>
+                            </button>
+
+                            <button onclick="openMerchantDetail('${m.id}')" class="flex items-center justify-center gap-1 py-2 px-2 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl text-xs font-bold transition-all border border-brand-200">
+                                <span>Perfil</span>
+                                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function openMerchantDetail(merchantId) {
+            const m = merchants.find(item => item.id === merchantId);
+            if (!m) return;
+
+            switchView('merchant-detail');
+            const isFav = favorites.includes(m.id);
+            const container = document.getElementById('merchantDetailContent');
+
+            container.innerHTML = `
+                <!-- Profile Header Banner -->
+                <div class="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-xl">
+                    <div class="h-56 sm:h-72 relative">
+                        <img src="${m.imageUrl}" class="w-full h-full object-cover opacity-60">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+                        
+                        <!-- Top actions -->
+                        <div class="absolute top-4 right-4 flex items-center gap-2">
+                            <button onclick="shareMerchant('${m.name}')" class="p-2.5 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 text-white transition-all">
+                                <i data-lucide="share-2" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="toggleFavorite('${m.id}'); openMerchantDetail('${m.id}')" class="p-2.5 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 text-white transition-all">
+                                <i data-lucide="heart" class="w-4 h-4 ${isFav ? 'text-rose-500 fill-rose-500' : ''}"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-6 sm:p-8 -mt-20 relative z-10 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold ${m.isOpen ? 'bg-mint-500 text-white' : 'bg-slate-700 text-slate-300'}">
+                                        ${m.isOpen ? 'Aberto Agora' : 'Fechado no momento'}
+                                    </span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/10 backdrop-blur-md text-white border border-white/20">
+                                        ${m.category}
+                                    </span>
+                                </div>
+                                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">${m.name}</h1>
+                                <p class="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl">${m.description}</p>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <a href="https://wa.me/${m.whatsapp}?text=${encodeURIComponent('Olá! Encontrei sua loja no LocalHub e gostaria de fazer um pedido.')}" target="_blank" class="px-5 py-3 rounded-2xl bg-mint-500 hover:bg-mint-600 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-mint-500/20 flex items-center gap-2 transition-all transform active:scale-95">
+                                    <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                    <span>Falar no WhatsApp</span>
+                                </a>
+                                <button onclick="openRouteMap('${m.address}')" class="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 font-bold text-xs sm:text-sm backdrop-blur-md transition-all">
+                                    <i data-lucide="navigation" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Info Pills -->
+                        <div class="pt-4 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold">Avaliação</span>
+                                <span class="font-extrabold text-amber-400 text-sm flex items-center gap-1 mt-0.5">
+                                    <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i> ${m.rating.toFixed(1)} (${m.reviewsCount} opiniões)
+                                </span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold">Distância</span>
+                                <span class="font-bold text-white text-sm mt-0.5">${m.distance} do seu local</span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold">Horário</span>
+                                <span class="font-bold text-white text-xs mt-0.5 truncate block">${m.hours}</span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                                <span class="text-slate-400 block text-[10px] uppercase font-bold">Endereço</span>
+                                <span class="font-bold text-white text-xs mt-0.5 truncate block">${m.address}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Catalog Section header & Add Product CTA -->
+                <div class="flex items-center justify-between pt-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Catálogo de Produtos e Serviços</h2>
+                        <p class="text-xs text-slate-500">Itens cadastrados por este estabelecimento</p>
+                    </div>
+                    <button onclick="openAddProductModal('${m.id}')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Produto
+                    </button>
+                </div>
+
+                <!-- Products Grid for Merchant -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${m.products && m.products.length > 0 ? m.products.map(p => `
+                        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex gap-4 hover:shadow-md transition-all">
+                            <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80'}" class="w-20 h-20 rounded-xl object-cover shrink-0 bg-slate-100">
+                            <div class="flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm leading-snug line-clamp-1">${p.title}</h4>
+                                    <p class="text-xs text-slate-500 line-clamp-1 mt-0.5">${p.description || ''}</p>
+                                </div>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-sm font-extrabold text-brand-600">R$ ${p.price.toFixed(2)}</span>
+                                    <a href="https://wa.me/${m.whatsapp}?text=${encodeURIComponent('Olá! Tenho interesse no produto: ' + p.title)}" target="_blank" class="px-2.5 py-1 rounded-lg bg-mint-50 text-mint-700 hover:bg-mint-100 font-bold text-xs transition-all flex items-center gap-1">
+                                        <i data-lucide="message-square" class="w-3 h-3"></i> Pedir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') : `
+                        <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-slate-200">
+                            <i data-lucide="package-open" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                            <p class="text-xs font-semibold text-slate-600">Nenhum produto cadastrado ainda para este estabelecimento.</p>
+                            <button onclick="openAddProductModal('${m.id}')" class="mt-3 text-xs font-bold text-brand-600 hover:underline">Cadastrar o primeiro produto</button>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function filterProductsCatalog(term = searchQuery) {
+            const grid = document.getElementById('productGrid');
+            const catFilter = document.getElementById('productCategoryFilter').value;
+
+            let allProducts = [];
+            merchants.forEach(m => {
+                if (m.products) {
+                    m.products.forEach(p => {
+                        allProducts.push({ ...p, merchantName: m.name, merchantWhatsapp: m.whatsapp, category: m.category, merchantId: m.id });
+                    });
+                }
+            });
+
+            if (catFilter !== 'all') {
+                allProducts = allProducts.filter(p => p.category === catFilter);
+            }
+
+            if (term) {
+                const lower = term.toLowerCase();
+                allProducts = allProducts.filter(p => p.title.toLowerCase().includes(lower) || (p.description && p.description.toLowerCase().includes(lower)) || p.merchantName.toLowerCase().includes(lower));
+            }
+
+            if (allProducts.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-slate-200">
+                        <i data-lucide="search-x" class="w-8 h-8 mx-auto text-slate-400 mb-2"></i>
+                        <p class="text-xs text-slate-500 font-medium">Nenhum produto encontrado com este termo.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = allProducts.map(p => `
+                <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden hover:shadow-md transition-all flex flex-col justify-between group">
+                    <div class="h-36 overflow-hidden bg-slate-100 relative">
+                        <img src="${p.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-700">
+                            ${p.category}
+                        </span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                            <span onclick="openMerchantDetail('${p.merchantId}')" class="text-[11px] font-bold text-brand-600 hover:underline cursor-pointer block truncate">${p.merchantName}</span>
+                            <h4 class="font-bold text-slate-900 text-sm leading-tight line-clamp-1 mt-0.5">${p.title}</h4>
+                            <p class="text-xs text-slate-500 line-clamp-2 mt-1">${p.description || ''}</p>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <span class="text-base font-extrabold text-slate-900">R$ ${p.price.toFixed(2)}</span>
+                            <a href="https://wa.me/${p.merchantWhatsapp}?text=${encodeURIComponent('Olá! Gostaria de comprar: ' + p.title + ' que vi no LocalHub')}" target="_blank" class="px-3 py-1.5 rounded-xl bg-mint-500 hover:bg-mint-600 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1">
+                                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                                <span>Pedir</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function renderFavorites() {
+            const grid = document.getElementById('favoritesGrid');
+            const empty = document.getElementById('favoritesEmptyState');
+
+            const favList = merchants.filter(m => favorites.includes(m.id));
+
+            if (favList.length === 0) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.innerHTML = favList.map(m => `
+                <div class="bg-white rounded-3xl border border-slate-200 p-5 flex items-center gap-4 hover:shadow-md transition-all">
+                    <img src="${m.imageUrl}" class="w-20 h-20 rounded-2xl object-cover shrink-0 bg-slate-100">
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[10px] font-bold text-brand-600 uppercase tracking-wider">${m.category}</span>
+                        <h3 class="font-bold text-slate-900 text-base truncate">${m.name}</h3>
+                        <p class="text-xs text-slate-500 truncate">${m.address}</p>
+                        <div class="mt-2 flex items-center gap-2">
+                            <button onclick="openMerchantDetail('${m.id}')" class="text-xs font-bold text-brand-600 hover:underline">Ver Perfil</button>
+                            <span class="text-slate-300">•</span>
+                            <button onclick="toggleFavorite('${m.id}'); renderFavorites()" class="text-xs font-bold text-rose-500 hover:underline">Remover</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function toggleFavorite(id) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+                showToast('Removido dos favoritos', 'info');
+            } else {
+                favorites.push(id);
+                showToast('Adicionado aos favoritos!', 'success');
+            }
+            saveFavoritesToStorage();
+            applyFiltersAndSort();
+        }
+
+        function updateFavoritesBadge() {
+            const badge = document.getElementById('favBadgeMobile');
+            if (badge) {
+                badge.classList.toggle('hidden', favorites.length === 0);
+            }
+        }
+
+        function switchView(viewName) {
+            activeView = viewName;
+
+            ['explore', 'products', 'favorites', 'merchant-detail'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.toggle('hidden', v !== viewName);
+            });
+
+            // Update Mobile Nav Active States
+            ['explore', 'products', 'favorites'].forEach(v => {
+                const btn = document.getElementById(`nav-btn-${v}`);
+                if (btn) {
+                    if (v === viewName) {
+                        btn.className = "flex flex-col items-center justify-center gap-1 text-brand-600 font-bold transition-all";
+                    } else {
+                        btn.className = "flex flex-col items-center justify-center gap-1 text-slate-400 font-semibold transition-all hover:text-slate-600";
+                    }
+                }
+            });
+
+            if (viewName === 'products') {
+                filterProductsCatalog();
+            } else if (viewName === 'favorites') {
+                renderFavorites();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openNewBusinessModal() {
+            document.getElementById('modalNewBusiness').classList.remove('hidden');
+        }
+
+        function closeNewBusinessModal() {
+            document.getElementById('modalNewBusiness').classList.add('hidden');
+            document.getElementById('businessForm').reset();
+        }
+
+        function saveNewBusiness(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('formName').value;
+            const category = document.getElementById('formCategory').value;
+            const whatsapp = document.getElementById('formWhatsapp').value.replace(/\D/g, '');
+            const hours = document.getElementById('formHours').value;
+            const address = document.getElementById('formAddress').value;
+            const distance = document.getElementById('formDistance').value;
+            let imageUrl = document.getElementById('formImageUrl').value;
+            const description = document.getElementById('formDescription').value;
+            const isOpen = document.getElementById('formIsOpen').checked;
+
+            if (!imageUrl) {
+                // Fallback default image based on category
+                const fallbacks = {
+                    'Padarias': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
+                    'Mercados': 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80',
+                    'Restaurantes': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+                    'Serviços': 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80',
+                    'Oficinas': 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80',
+                    'Pet Shop': 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=800&q=80'
+                };
+                imageUrl = fallbacks[category] || 'https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=800&q=80';
+            }
+
+            const newMerchant = {
+                id: 'merch-' + Date.now(),
+                name,
+                category,
+                rating: 5.0,
+                reviewsCount: 1,
+                whatsapp,
+                address,
+                distance,
+                hours,
+                isOpen,
+                description: description || 'Estabelecimento local recém cadastrado na comunidade.',
+                imageUrl,
+                products: []
+            };
+
+            merchants.unshift(newMerchant);
+            saveMerchantsToStorage();
+            closeNewBusinessModal();
+
+            showToast('Empresa cadastrada com sucesso!', 'success');
+            switchView('explore');
+            applyFiltersAndSort();
+            openMerchantDetail(newMerchant.id);
+        }
+
+        function openAddProductModal(merchantId) {
+            document.getElementById('productMerchantId').value = merchantId;
+            document.getElementById('modalAddProduct').classList.remove('hidden');
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('modalAddProduct').classList.add('hidden');
+            document.getElementById('productForm').reset();
+        }
+
+        function saveNewProduct(e) {
+            e.preventDefault();
+
+            const merchantId = document.getElementById('productMerchantId').value;
+            const title = document.getElementById('prodTitle').value;
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const isAvailable = document.getElementById('prodAvailable').value === 'true';
+            const description = document.getElementById('prodDescription').value;
+            let imageUrl = document.getElementById('prodImageUrl').value;
+
+            const merchant = merchants.find(m => m.id === merchantId);
+            if (!merchant) return;
+
+            if (!imageUrl) {
+                imageUrl = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80';
+            }
+
+            if (!merchant.products) merchant.products = [];
+
+            merchant.products.unshift({
+                id: 'prod-' + Date.now(),
+                title,
+                price,
+                isAvailable,
+                description,
+                imageUrl
+            });
+
+            saveMerchantsToStorage();
+            closeAddProductModal();
+            showToast('Produto adicionado ao catálogo!', 'success');
+            openMerchantDetail(merchantId);
+        }
+
+        function toggleMapView() {
+            isMapView = !isMapView;
+            const drawer = document.getElementById('mapDrawer');
+            const btn = document.getElementById('mapToggleBtn');
+
+            if (isMapView) {
+                drawer.classList.remove('hidden');
+                btn.classList.add('bg-brand-50', 'border-brand-500', 'text-brand-600');
+                applyFiltersAndSort();
+            } else {
+                drawer.classList.add('hidden');
+                btn.classList.remove('bg-brand-50', 'border-brand-500', 'text-brand-600');
+            }
+        }
+
+        function renderMapPins(list) {
+            const container = document.getElementById('mapPinsContainer');
+            if (!container) return;
+
+            // Generate relative layout coordinates for visual pins
+            container.innerHTML = list.slice(0, 8).map((m, idx) => {
+                const top = 15 + ((idx * 27) % 70);
+                const left = 10 + ((idx * 33) % 80);
+
+                return `
+                    <div style="top: ${top}%; left: ${left}%;" 
+                         onclick="openMerchantDetail('${m.id}')"
+                         class="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10 hover:z-30">
+                        
+                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white shadow-md border border-slate-200 text-xs font-bold text-slate-800 group-hover:scale-110 transition-transform">
+                            <span class="w-2 h-2 rounded-full ${m.isOpen ? 'bg-mint-500' : 'bg-slate-400'}"></span>
+                            <span>${m.name}</span>
+                            <span class="text-[10px] text-slate-400">(${m.distance})</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleLocationModal() {
+            document.getElementById('modalLocation').classList.toggle('hidden');
+        }
+
+        function setLocation(locName) {
+            document.getElementById('currentLocationLabel').innerText = locName;
+            toggleLocationModal();
+            showToast(`Localização definida: ${locName}`, 'info');
+        }
+
+        function openRouteMap(address) {
+            const encoded = encodeURIComponent(address);
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank');
+        }
+
+        function shareMerchant(name) {
+            const text = `Confira ${name} no LocalHub!`;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(window.location.href);
+                showToast('Link do comércio copiado para a área de transferência!', 'info');
+            } else {
+                showToast(`Compartilhando: ${name}`, 'info');
+            }
+        }
+
+        function getCategoryIcon(cat) {
+            const match = CATEGORIES.find(c => c.id === cat);
+            return match ? match.icon : 'store';
+        }
+
+        function resetFilters() {
+            activeCategory = 'all';
+            searchQuery = '';
+            openOnlyFilter = false;
+            document.getElementById('desktopSearchInput').value = '';
+            document.getElementById('mobileSearchInput').value = '';
+            document.getElementById('desktopClearBtn').classList.add('hidden');
+            document.getElementById('mobileClearBtn').classList.add('hidden');
+            renderCategories();
+            applyFiltersAndSort();
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const bgClass = type === 'success' ? 'bg-slate-900 text-white' : 'bg-brand-600 text-white';
+            const icon = type === 'success' ? 'check-circle' : 'info';
+
+            toast.className = `${bgClass} px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 pointer-events-auto transform transition-all duration-300 translate-y-4 opacity-0`;
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="w-4 h-4 text-mint-400"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
